@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: vera-ai-challenge-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: LLM_ENABLED
+        value: "true"
+      - key: OPENAI_MODEL
+        value: gpt-5.6-luna
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TEAM_NAME
+        sync: false
+      - key: TEAM_MEMBERS
+        sync: false
+      - key: CONTACT_EMAIL
+        sync: false
