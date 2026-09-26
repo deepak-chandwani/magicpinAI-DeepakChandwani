@@ -3,4 +3,4 @@ WORKDIR /app
 COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8080
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-10000} app:app"]
