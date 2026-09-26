@@ -311,7 +311,137 @@ def home():
             color: #182230;
         }
 
+                /* ---------- DEMO CHAT ---------- */
 
+        .chat-panel {
+            background: white;
+            border: 1px solid #e4e7ec;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid #eef0f3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 15px;
+            font-weight: 650;
+            color: #182230;
+        }
+
+        .chat-subtitle {
+            margin-top: 5px;
+            color: #98a2b3;
+            font-size: 12px;
+        }
+
+        .demo-badge {
+            font-size: 10px;
+            font-weight: 800;
+            color: #667085;
+            background: #f2f4f7;
+            padding: 5px 8px;
+            border-radius: 5px;
+        }
+
+        .chat-messages {
+            min-height: 180px;
+            max-height: 360px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafbfc;
+        }
+
+        .chat-empty {
+            color: #98a2b3;
+            text-align: center;
+            padding: 55px 20px;
+            font-size: 13px;
+        }
+
+        .message {
+            margin-bottom: 14px;
+            max-width: 78%;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .bot-message {
+            background: white;
+            border: 1px solid #e4e7ec;
+            color: #344054;
+        }
+
+        .user-message {
+            background: #111827;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message-label {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            opacity: 0.65;
+        }
+
+        .chat-controls {
+            padding: 16px;
+            border-top: 1px solid #eef0f3;
+        }
+
+        .start-button {
+            margin: 0;
+            background: #111827;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .start-button:hover {
+            opacity: 0.9;
+        }
+
+        .message-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        .message-box input {
+            flex: 1;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 10px 12px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .message-box input:focus {
+            border-color: #98a2b3;
+        }
+
+        .message-box button {
+            margin: 0;
+            background: #111827;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
         /* ---------- RESPONSIVE ---------- */
 
         @media (max-width: 850px) {
@@ -559,7 +689,70 @@ def home():
 
         </section>
 
+                <!-- DEMO CHAT -->
 
+        <section class="section">
+
+            <div class="section-heading">
+                Try ChandwaniBot
+            </div>
+
+            <div class="chat-panel">
+
+                <div class="chat-header">
+                    <div>
+                        <div class="chat-title">Merchant growth assistant</div>
+                        <div class="chat-subtitle">
+                            See how ChandwaniBot turns a business signal into a conversation.
+                        </div>
+                    </div>
+
+                    <span class="demo-badge">DEMO</span>
+                </div>
+
+
+                <div id="chatMessages" class="chat-messages">
+
+                    <div class="chat-empty">
+                        Start the demo to see ChandwaniBot in action.
+                    </div>
+
+                </div>
+
+
+                <div class="chat-controls">
+
+                    <button
+                        id="startDemo"
+                        class="start-button"
+                        onclick="startDemo()">
+                        Start demo
+                    </button>
+
+                    <div
+                        id="messageBox"
+                        class="message-box"
+                        style="display:none;">
+
+                        <input
+                            id="chatInput"
+                            type="text"
+                            placeholder="Type a message..."
+                            onkeydown="handleEnter(event)"
+                        >
+
+                        <button
+                            onclick="sendMessage()">
+                            Send
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
         <!-- FOOTER -->
 
         <footer class="footer">
@@ -643,6 +836,203 @@ def home():
 
 
         loadData();
+        let demoConversationId = null;
+
+
+        async function startDemo() {
+
+            const messages =
+                document.getElementById("chatMessages");
+
+            messages.innerHTML = `
+                <div class="chat-empty">
+                    Starting demo...
+                </div>
+            `;
+
+            try {
+
+                const response =
+                    await fetch("/demo/start", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                const data =
+                    await response.json();
+
+                if (!response.ok || !data.ok) {
+                    throw new Error(
+                        data.error || "Unable to start demo"
+                    );
+                }
+
+                demoConversationId =
+                    data.conversation_id;
+
+                messages.innerHTML = "";
+
+                addBotMessage(data.message);
+
+                document.getElementById(
+                    "startDemo"
+                ).style.display = "none";
+
+                document.getElementById(
+                    "messageBox"
+                ).style.display = "flex";
+
+                document.getElementById(
+                    "chatInput"
+                ).focus();
+
+            } catch (error) {
+
+                messages.innerHTML = `
+                    <div class="chat-empty">
+                        Could not start the demo.
+                        Please try again.
+                    </div>
+                `;
+
+                console.error(error);
+            }
+        }
+
+
+        function addBotMessage(message) {
+
+            const messages =
+                document.getElementById("chatMessages");
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "message bot-message";
+
+            div.innerHTML = `
+                <div class="message-label">
+                    CHANDWANIBOT
+                </div>
+                ${escapeHtml(message)}
+            `;
+
+            messages.appendChild(div);
+
+            messages.scrollTop =
+                messages.scrollHeight;
+        }
+
+
+        function addUserMessage(message) {
+
+            const messages =
+                document.getElementById("chatMessages");
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "message user-message";
+
+            div.innerHTML = `
+                <div class="message-label">
+                    YOU
+                </div>
+                ${escapeHtml(message)}
+            `;
+
+            messages.appendChild(div);
+
+            messages.scrollTop =
+                messages.scrollHeight;
+        }
+
+
+        async function sendMessage() {
+
+            const input =
+                document.getElementById("chatInput");
+
+            const message =
+                input.value.trim();
+
+            if (!message || !demoConversationId) {
+                return;
+            }
+
+            addUserMessage(message);
+
+            input.value = "";
+
+            try {
+
+                const response =
+                    await fetch("/demo/reply", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            conversation_id:
+                                demoConversationId,
+                            message: message
+                        })
+                    });
+
+                const data =
+                    await response.json();
+
+                if (data.body) {
+
+                    addBotMessage(data.body);
+
+                } else if (data.message) {
+
+                    addBotMessage(data.message);
+
+                } else if (data.action === "end") {
+
+                    addBotMessage(
+                        "Thanks. I'll close this conversation here."
+                    );
+
+                }
+
+            } catch (error) {
+
+                addBotMessage(
+                    "I couldn't process that message. Please try again."
+                );
+
+                console.error(error);
+            }
+        }
+
+
+        function handleEnter(event) {
+
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+
+        }
+
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent =
+                text || "";
+
+            return div.innerHTML;
+        }
 
     </script>
 
@@ -945,8 +1335,9 @@ def reply():
     })
 
     result = next_reply(
-        message,
-        conv.get("last_action")
+    message,
+    conv.get("last_action"),
+    conv.get("history", [])
     )
 
     if result["action"] == "send":
@@ -961,7 +1352,162 @@ def reply():
 
     return jsonify(result)
 
+@app.post("/demo/start")
+def demo_start():
+    """
+    Create a small demo scenario for the public homepage.
+    """
 
+    category_id = "demo_restaurants"
+    merchant_id = "demo_spice"
+    trigger_id = "demo_calls_spike"
+
+    # Demo category
+    store.put(
+        "category",
+        category_id,
+        1,
+        {
+            "category_slug": category_id,
+            "name": "Restaurants",
+        },
+    )
+
+    # Demo merchant
+    store.put(
+        "merchant",
+        merchant_id,
+        1,
+        {
+            "merchant_id": merchant_id,
+            "name": "Spice",
+            "category_slug": category_id,
+        },
+    )
+
+    # Demo performance signal
+    store.put(
+        "trigger",
+        trigger_id,
+        1,
+        {
+            "id": trigger_id,
+            "merchant_id": merchant_id,
+            "kind": "perf_spike",
+            "metric": "calls",
+            "delta": 12,
+        },
+    )
+
+    # Resolve the demo trigger using the existing engine
+    category, merchant, trigger, customer = resolve_trigger(
+        trigger_id
+    )
+
+    if not category or not merchant or not trigger:
+        return jsonify({
+            "ok": False,
+            "error": "Could not create demo scenario"
+        }), 500
+
+    # Use the existing ranking engine
+    decision = ranker.rank(
+        category,
+        merchant,
+        trigger,
+        customer
+    )
+
+    # Use the existing composer
+    out = composer.compose(
+        category,
+        merchant,
+        trigger,
+        customer
+    )
+
+    # Create a demo conversation
+    conversation_id = (
+        f"demo_{uuid.uuid4().hex[:10]}"
+    )
+
+    state = {
+        "merchant_id": merchant_id,
+        "customer_id": None,
+        "trigger_id": trigger_id,
+        "history": [
+            {
+                "role": "vera",
+                "body": out["body"],
+                "ts": now_iso(),
+            }
+        ],
+        "last_action": out,
+        "unanswered_nudges": 0,
+        "created_at": now_iso(),
+    }
+
+    store.create_conversation(
+        conversation_id,
+        state
+    )
+
+    return jsonify({
+        "ok": True,
+        "conversation_id": conversation_id,
+        "merchant": merchant["name"],
+        "message": out["body"],
+        "cta": out["cta"],
+    })
+
+
+@app.post("/demo/reply")
+def demo_reply():
+    """
+    Continue the demo conversation using the
+    same conversation handler as the competition API.
+    """
+
+    data = request.get_json(silent=True) or {}
+
+    conversation_id = data.get("conversation_id")
+    message = (data.get("message") or "").strip()
+
+    conv = store.get_conversation(conversation_id)
+
+    if not conv:
+        return jsonify({
+            "ok": False,
+            "action": "end",
+            "message": "This demo session has expired. Please start a new demo."
+        }), 404
+
+    conv["history"].append({
+        "role": "merchant",
+        "body": message,
+        "ts": now_iso(),
+    })
+
+    result = next_reply(
+    message,
+    conv.get("last_action"),
+    conv.get("history", [])
+    )
+
+    if result["action"] == "send":
+
+        conv["history"].append({
+            "role": "vera",
+            "body": result["body"],
+            "ts": now_iso(),
+        })
+
+        conv["last_action"] = result
+
+    return jsonify({
+        "ok": True,
+        **result
+    })
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
